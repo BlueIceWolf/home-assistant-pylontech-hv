@@ -1,0 +1,39 @@
+{
+  "title": "Pylontech HV BMS",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Pylontech HV BMS verbinden",
+        "description": "Verbindung zum TCP-Stream der Pylontech-Konsole herstellen.",
+        "data": {
+          "host": "IP-Adresse / Hostname",
+          "port": "TCP-Port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zum BMS nicht möglich."
+    },
+    "abort": {
+      "already_configured": "Dieses BMS ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Pylontech HV Einstellungen",
+        "description": "Lege Abfrageintervalle, sichtbare Zellwerte und Warnschwellen fest.",
+        "data": {
+          "scan_interval": "Abfrageintervall Hauptdaten (Sekunden)",
+          "cell_scan_interval": "Abfrageintervall Zellwerte (Sekunden)",
+          "cell_entities": "Zell-Entitäten",
+          "module_details": "Erweiterte Modulwerte anzeigen",
+          "warn_cell_delta_mv": "Warnung Zellabweichung ab (mV)",
+          "warn_max_cell_temp": "Warnung Zelltemperatur ab (°C)",
+          "warn_min_cell_voltage": "Warnung Zellspannung unter (V)",
+          "warn_max_cell_voltage": "Warnung Zellspannung über (V)"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "title": "Pylontech HV BMS",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Pylontech HV BMS",
+        "description": "Connect to the TCP stream exposing the Pylontech console.",
+        "data": {
+          "host": "IP address / hostname",
+          "port": "TCP port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the BMS."
+    },
+    "abort": {
+      "already_configured": "This BMS is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Pylontech HV options",
+        "description": "Configure polling, visible cell entities and warning thresholds.",
+        "data": {
+          "scan_interval": "Main polling interval (seconds)",
+          "cell_scan_interval": "Cell polling interval (seconds)",
+          "cell_entities": "Cell entities",
+          "module_details": "Expose extended module values",
+          "warn_cell_delta_mv": "Cell imbalance warning threshold (mV)",
+          "warn_max_cell_temp": "High cell temperature warning (\u00b0C)",
+          "warn_min_cell_voltage": "Low cell voltage warning (V)",
+          "warn_max_cell_voltage": "High cell voltage warning (V)"
+        }
+      }
+    }
+  }
+}
