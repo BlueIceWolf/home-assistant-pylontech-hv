@@ -36,6 +36,25 @@ It was developed and tested with a **Pylontech SC0500 / XHB_CMU_H7** system.
 
 ---
 
+## Lovelace card
+
+A matching dashboard card is available separately:
+
+**[Pylontech HV Card](https://github.com/BlueIceWolf/pylontech-hv-card)**
+
+The card is designed to work with this integration and provides a cleaner overview of battery state, BMUs, cell voltages, diagnostics and warnings without having to place many individual entities on a dashboard.
+
+Example:
+
+```yaml
+type: custom:pylontech-hv-card
+entity: sensor.pylontech_bms_battery
+```
+
+See the card repository for installation and configuration details.
+
+---
+
 ## Tested hardware
 
 The current version has been tested with:
