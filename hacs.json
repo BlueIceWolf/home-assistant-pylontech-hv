@@ -1,0 +1,8 @@
+{
+  "name": "Pylontech HV BMS",
+  "render_readme": true,
+  "domains": [
+    "sensor",
+    "binary_sensor"
+  ]
+}
