@@ -1,92 +1,73 @@
-# Pylontech HV BMS for Home Assistant
+<p align="center">
+  <img src="custom_components/pylontech_hv/brand/logo.png" alt="Pylontech HV BMS" width="520">
+</p>
 
-Custom Home Assistant integration for Pylontech high-voltage BMS systems,
-initially tested with an **SC0500 / XHB_CMU_H7**, 10 battery modules and
-150 cells.
+<h1 align="center">Pylontech HV BMS for Home Assistant</h1>
 
-## Features
+<p align="center">
+  Local monitoring for Pylontech high-voltage battery systems in Home Assistant.
+</p>
 
-- Local polling over a TCP-to-UART console bridge
-- `info`, `pwr`, `unit` and `bat` parsing
-- SC0500-specific console format support
-- BMS + individual BMU devices in Home Assistant
-- Optional individual cell entities
-- Configurable polling intervals
-- Cell polling can run slower than normal BMS polling
+---
+
+## What this integration does
+
+**Pylontech HV BMS** reads the service console of a Pylontech high-voltage BMS through a TCP-to-serial bridge and brings the important battery values into Home Assistant.
+
+It was developed and tested with a **Pylontech SC0500 / XHB_CMU_H7** system.
+
+### Highlights
+
+- BMS and every battery module appear as separate Home Assistant devices
+- Pack voltage, current, temperature and state of charge
+- Module voltage, current, temperature and SOC
+- Individual cell voltages
+- Minimum and maximum cell voltage and temperature
 - Calculated pack power
 - Calculated cell-voltage spread
-- Calculated cell-temperature spread
-- Integrated warning binary sensors
-- Configurable warning thresholds
-- Downloadable Home Assistant diagnostics
-- German and English setup/options text
+- Calculated temperature spread
+- Integrated warning sensors
+- Configurable warning limits
+- Configurable polling intervals
+- Optional detailed module and cell sensors
+- Home Assistant diagnostics download
+- German and English setup texts
+- Fully local — no cloud required
 
-## Tested setup
+---
 
-- Pylontech SC0500 / XHB_CMU_H7
-- Specification reported by BMS: 480 V / 50 Ah
-- 150 cells
-- 10 modules with 15 cells each
-- ESPHome stream server exposing the Pylontech console over TCP
+## Tested hardware
 
-Default TCP port is `1234`.
+The current version has been tested with:
 
-## Installation with HACS
+| Component | Tested setup |
+| --- | --- |
+| BMS | Pylontech SC0500 / XHB_CMU_H7 |
+| Battery system | 480 V / 50 Ah |
+| Battery modules | 10 |
+| Cells | 150 |
+| Cells per module | 15 |
+| Connection | Pylontech console via TCP/UART bridge |
 
-1. Add this repository to HACS as a **Custom repository**.
-2. Type: **Integration**
-3. Install **Pylontech HV BMS**.
-4. Restart Home Assistant.
-5. Go to **Settings → Devices & services → Add integration**.
-6. Search for **Pylontech HV BMS**.
-7. Enter the TCP bridge host/IP and port.
+Other Pylontech HV systems may work as well, but their console output can differ.
 
-## Options
+---
 
-After setup, open the integration options.
+## Requirements
 
-### Polling
+You need a TCP bridge connected to the Pylontech console.
 
-- Main polling interval: 10–300 seconds
-- Cell polling interval: 30–3600 seconds
+The tested setup uses:
 
-Cell data is intentionally allowed to update more slowly because the `bat`
-command is much larger than the normal `pwr` and `unit` responses.
+**mletenay/esphome-stream-server**
 
-### Cell entities
+Default TCP port used by this integration:
 
-- `none`: no individual cell entities
-- `voltage`: only individual cell voltages
-- `full`: all parsed cell values
+```text
+1234
+```
 
-### Module details
-
-Disabled by default. When enabled, all parsed BMU values are exposed.
-
-## Warning sensors
-
-The integration creates problem binary sensors for:
-
-- Any active warning
-- Cell imbalance
-- High cell temperature
-- Cell voltage outside configured limits
-- BMS status / error-code warning
-
-The thresholds can be changed in the integration options.
-
-The main warning entity contains a human-readable message as an attribute.
-
-## Diagnostics
-
-Home Assistant's **Download diagnostics** function is supported.
-The host/IP is redacted from the diagnostics output.
-
-## ESP stream server
-
-The tested setup uses `mletenay/esphome-stream-server`.
-
-For large `bat` responses, a larger stream/UART buffer is recommended, for example:
+Because the `bat` command returns a lot of data, a larger stream buffer is recommended:
 
 ```yaml
 stream_server:
@@ -95,13 +76,208 @@ stream_server:
   buffer_size: 4096
 ```
 
-Also consider increasing the UART RX buffer if supported by your ESPHome setup.
+A larger UART RX buffer is also recommended when supported by your ESPHome configuration.
 
-## Compatibility
+---
 
-The first supported target is SC0500 / XHB_CMU_H7. Other Pylontech HV BMS
-variants may work, but their console output can differ.
+## Installation with HACS
+
+### 1. Add the repository
+
+In HACS:
+
+**HACS → Custom repositories**
+
+Add:
+
+```text
+https://github.com/BlueIceWolf/home-assistant-pylontech-hv
+```
+
+Select:
+
+```text
+Integration
+```
+
+### 2. Install
+
+Install **Pylontech HV BMS** and restart Home Assistant.
+
+### 3. Add the integration
+
+Go to:
+
+**Settings → Devices & services → Add integration**
+
+Search for:
+
+```text
+Pylontech HV BMS
+```
+
+Enter the IP address or hostname of your TCP bridge and its port.
+
+Example:
+
+```text
+Host: 192.168.1.170
+Port: 1234
+```
+
+After setup, the main BMS and all detected BMUs are created automatically.
+
+---
+
+## Configuration
+
+Open:
+
+**Settings → Devices & services → Pylontech HV BMS → Configure**
+
+### Polling intervals
+
+You can configure separate intervals for normal BMS data and the much larger cell-data request.
+
+| Setting | Default |
+| --- | ---: |
+| Main BMS polling | 30 s |
+| Cell polling | 300 s |
+
+Keeping cell polling slower reduces load on the ESP/TCP bridge.
+
+### Cell entities
+
+Choose how much cell information you want:
+
+| Mode | Description |
+| --- | --- |
+| `none` | No individual cell entities |
+| `voltage` | Only individual cell voltages |
+| `full` | All parsed cell values |
+
+For most installations, **voltage** is the recommended option.
+
+### Module details
+
+Extended module values can be enabled if you need deeper diagnostics.
+
+By default, only the most useful BMU values are shown to keep Home Assistant clean.
+
+---
+
+## Integrated diagnostics and warnings
+
+The integration creates additional calculated diagnostic values such as:
+
+- Pack power
+- Cell-voltage difference
+- Cell-temperature difference
+
+It also creates Home Assistant **problem binary sensors** for:
+
+- Cell imbalance
+- High cell temperature
+- Cell voltage outside configured limits
+- BMS status or error-code problems
+- Any active BMS warning
+
+The warning thresholds can be changed in the integration options.
+
+The main warning entity also includes a readable explanation in its attributes.
+
+---
+
+## Example device structure
+
+```text
+Pylontech HV BMS
+├── BMU #0
+│   ├── State of charge
+│   ├── Voltage
+│   ├── Current
+│   ├── Temperature
+│   ├── Lowest cell voltage
+│   ├── Highest cell voltage
+│   └── Cell 1–15 voltage
+├── BMU #1
+├── BMU #2
+└── ...
+```
+
+---
+
+## Diagnostics download
+
+Home Assistant's built-in **Download diagnostics** function is supported.
+
+The integration includes useful BMS data and warning information while redacting the configured host address.
+
+This makes bug reports much easier.
+
+---
+
+## Troubleshooting
+
+### Integration cannot connect
+
+Check that:
+
+- the ESP/TCP bridge is reachable
+- the configured TCP port is correct
+- no other program is currently using the Pylontech console
+- the Pylontech console has been initialized correctly
+
+### `bat` command times out
+
+The `bat` response can contain data for all cells and is much larger than `pwr` or `unit`.
+
+Increase the ESP stream buffer and avoid polling cell data too frequently.
+
+### Some values show `Null` or `0`
+
+Some Pylontech firmware versions expose fields for hardware that is not fitted, for example fan or additional temperature sensors. These values are not necessarily faults.
+
+---
+
+## Supported console commands
+
+The integration currently uses:
+
+```text
+info
+pwr
+unit
+bat
+```
+
+Support for additional Pylontech HV models can be added if their console output is available for testing.
+
+---
+
+## Credits
+
+This project is based in part on the work from:
+
+- **mletenay/home-assistant-pylontech**
+- **mletenay/esphome-stream-server**
+
+The original code is licensed under the MIT License.
+
+SC0500 / XHB_CMU_H7 support, parser changes, configurable entities, diagnostics and warning features were added for this project.
+
+See [NOTICE.md](NOTICE.md) for attribution details.
+
+---
 
 ## License
 
-MIT. See `LICENSE` and `NOTICE.md`.
+MIT License. See [LICENSE](LICENSE).
+
+---
+
+### Feedback and other Pylontech HV models
+
+If you use another Pylontech HV BMS, feel free to open an issue and include the output of the relevant console commands.
+
+That can help expand compatibility without guessing the protocol.
