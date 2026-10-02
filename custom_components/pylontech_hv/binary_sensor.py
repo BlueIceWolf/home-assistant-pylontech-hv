@@ -21,6 +21,7 @@ WARNINGS = {
     "warn_temperature": "Temperaturwarnung",
     "warn_cell_voltage": "Zellspannungswarnung",
     "warn_bms_state": "BMS Statuswarnung",
+    "balance_recommended": "Ausgleichsladung empfohlen",
 }
 
 
