@@ -22,7 +22,7 @@
     "step": {
       "init": {
         "title": "Pylontech HV Einstellungen",
-        "description": "Lege Abfrageintervalle, sichtbare Zellwerte und Warnschwellen fest.",
+        "description": "Lege Abfrageintervalle, sichtbare Zellwerte, Warnschwellen und optional einen externen Leistungssensor fest.",
         "data": {
           "scan_interval": "Abfrageintervall Hauptdaten (Sekunden)",
           "cell_scan_interval": "Abfrageintervall Zellwerte (Sekunden)",
@@ -31,7 +31,9 @@
           "warn_cell_delta_mv": "Warnung Zellabweichung ab (mV)",
           "warn_max_cell_temp": "Warnung Zelltemperatur ab (°C)",
           "warn_min_cell_voltage": "Warnung Zellspannung unter (V)",
-          "warn_max_cell_voltage": "Warnung Zellspannung über (V)"
+          "warn_max_cell_voltage": "Warnung Zellspannung über (V)",
+          "external_power_entity": "Externe Batterieleistung (optional)",
+          "external_power_invert": "Vorzeichen der externen Leistung invertieren"
         }
       }
     }
