@@ -184,8 +184,11 @@ class PylontechUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
 
         # Optional comparison with an external inverter/charger power sensor.
-        # This is deliberately called a power ratio, not efficiency: the external
-        # sensor may represent a different measurement point or update cadence.
+        # Estimate directional conversion efficiency from the two measurement points.
+        # Charging: external -> battery, so BMS/external.
+        # Discharging: battery -> external, so external/BMS.
+        # This remains an estimate because sensors may differ in measurement point
+        # and update cadence.
         external_entity = self.entry.options.get(CONF_EXTERNAL_POWER_ENTITY)
         external_power = None
         if external_entity:
@@ -208,7 +211,13 @@ class PylontechUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             # directions, which usually indicates a sign convention mismatch.
             same_direction = bms_power * external_power > 0
             if same_direction and abs(bms_power) >= 300 and abs(external_power) >= 300:
-                data["power_ratio_pct"] = abs(bms_power) / abs(external_power) * 100.0
+                if bms_power > 0:
+                    # Charging: power arriving at the battery / external input.
+                    efficiency = abs(bms_power) / abs(external_power) * 100.0
+                else:
+                    # Discharging: external output / power leaving the battery.
+                    efficiency = abs(external_power) / abs(bms_power) * 100.0
+                data["power_ratio_pct"] = efficiency
             else:
                 data["power_ratio_pct"] = None
         else:
