@@ -16,6 +16,9 @@ from homeassistant.helpers.storage import Store
 
 from .const import (
     CONF_CELL_SCAN_INTERVAL,
+    CONF_EXTERNAL_POWER_ENTITY,
+    CONF_EXTERNAL_POWER_INVERT,
+    DEFAULT_EXTERNAL_POWER_INVERT,
     CONF_SCAN_INTERVAL,
     CONF_WARN_CELL_DELTA_MV,
     CONF_WARN_MAX_CELL_TEMP,
@@ -179,6 +182,38 @@ class PylontechUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         data["diag_power_w"] = (
             voltage * current if voltage is not None and current is not None else None
         )
+
+        # Optional comparison with an external inverter/charger power sensor.
+        # This is deliberately called a power ratio, not efficiency: the external
+        # sensor may represent a different measurement point or update cadence.
+        external_entity = self.entry.options.get(CONF_EXTERNAL_POWER_ENTITY)
+        external_power = None
+        if external_entity:
+            state = self.hass.states.get(external_entity)
+            if state is not None:
+                external_power = _float(state.state)
+                unit = str(state.attributes.get("unit_of_measurement") or "W").lower()
+                if external_power is not None and unit == "kw":
+                    external_power *= 1000.0
+                if external_power is not None and self.entry.options.get(
+                    CONF_EXTERNAL_POWER_INVERT, DEFAULT_EXTERNAL_POWER_INVERT
+                ):
+                    external_power *= -1.0
+
+        data["external_power_w"] = external_power
+        bms_power = _float(data["diag_power_w"])
+        if bms_power is not None and external_power is not None:
+            data["power_difference_w"] = external_power - bms_power
+            # Avoid meaningless ratios around idle/standby and reject opposite
+            # directions, which usually indicates a sign convention mismatch.
+            same_direction = bms_power * external_power > 0
+            if same_direction and abs(bms_power) >= 300 and abs(external_power) >= 300:
+                data["power_ratio_pct"] = abs(bms_power) / abs(external_power) * 100.0
+            else:
+                data["power_ratio_pct"] = None
+        else:
+            data["power_difference_w"] = None
+            data["power_ratio_pct"] = None
         data["diag_cell_delta_v"] = (
             cell_high - cell_low
             if cell_high is not None and cell_low is not None
