@@ -108,6 +108,13 @@ CALCULATED = {
             suggested_display_precision=3,
         ),
     ),
+    "last_full_charge": (
+        "Letzte Ausgleichsladung",
+        SensorEntityDescription(
+            key="last_full_charge",
+            device_class=SensorDeviceClass.TIMESTAMP,
+        ),
+    ),
     "diag_temp_delta_k": (
         "Zelltemperaturdifferenz",
         SensorEntityDescription(
