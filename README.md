@@ -300,3 +300,10 @@ MIT License. See [LICENSE](LICENSE).
 If you use another Pylontech HV BMS, feel free to open an issue and include the output of the relevant console commands.
 
 That can help expand compatibility without guessing the protocol.
+
+
+### Balancing maintenance
+
+The integration keeps diagnostic cell-voltage/temperature observations separate from actual BMS alarm states. A cell-voltage delta alone is therefore **not** reported as a Pylontech BMS warning.
+
+For Force-H2 systems, an observed full charge (SOC >= 99%) is stored locally as the last balancing/full-charge event. After 90 days without another observed full charge, `binary_sensor` **Ausgleichsladung empfohlen** becomes active. This follows Pylontech's maintenance guidance to periodically charge the system fully for balancing. Until the integration has observed its first full charge, no overdue maintenance alarm is asserted.
