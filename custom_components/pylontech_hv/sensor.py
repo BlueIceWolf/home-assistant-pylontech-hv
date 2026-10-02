@@ -98,6 +98,33 @@ CALCULATED = {
             native_unit_of_measurement=UnitOfPower.WATT,
         ),
     ),
+    "external_power_w": (
+        "Externe Batterieleistung",
+        SensorEntityDescription(
+            key="external_power_w",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement=UnitOfPower.WATT,
+        ),
+    ),
+    "power_difference_w": (
+        "Leistungsdifferenz",
+        SensorEntityDescription(
+            key="power_difference_w",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement=UnitOfPower.WATT,
+        ),
+    ),
+    "power_ratio_pct": (
+        "Geschätztes Leistungsverhältnis",
+        SensorEntityDescription(
+            key="power_ratio_pct",
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement=PERCENTAGE,
+            suggested_display_precision=1,
+        ),
+    ),
     "diag_cell_delta_v": (
         "Zellspannungsdifferenz",
         SensorEntityDescription(
