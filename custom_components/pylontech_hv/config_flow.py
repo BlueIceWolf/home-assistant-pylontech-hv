@@ -9,6 +9,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.selector import EntitySelector, EntitySelectorConfig
 
 from .const import (
     CELL_ENTITIES_FULL,
@@ -17,6 +18,9 @@ from .const import (
     CONF_CELL_ENTITIES,
     CONF_CELL_SCAN_INTERVAL,
     CONF_MODULE_DETAILS,
+    CONF_EXTERNAL_POWER_ENTITY,
+    CONF_EXTERNAL_POWER_INVERT,
+    DEFAULT_EXTERNAL_POWER_INVERT,
     CONF_SCAN_INTERVAL,
     CONF_WARN_CELL_DELTA_MV,
     CONF_WARN_MAX_CELL_TEMP,
@@ -133,6 +137,14 @@ class PylontechHVOptionsFlow(config_entries.OptionsFlow):
                 vol.Required(
                     CONF_MODULE_DETAILS,
                     default=o.get(CONF_MODULE_DETAILS, DEFAULT_MODULE_DETAILS),
+                ): bool,
+                vol.Optional(
+                    CONF_EXTERNAL_POWER_ENTITY,
+                    description={"suggested_value": o.get(CONF_EXTERNAL_POWER_ENTITY)},
+                ): EntitySelector(EntitySelectorConfig(domain="sensor")),
+                vol.Required(
+                    CONF_EXTERNAL_POWER_INVERT,
+                    default=o.get(CONF_EXTERNAL_POWER_INVERT, DEFAULT_EXTERNAL_POWER_INVERT),
                 ): bool,
                 vol.Required(
                     CONF_WARN_CELL_DELTA_MV,
