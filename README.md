@@ -319,6 +319,6 @@ The integration then exposes:
 
 - External battery power
 - Power difference
-- Estimated power ratio
+- Estimated efficiency
 
-The ratio is only calculated when both values are at least 300 W and have the same direction. It is intentionally called a **power ratio**, not inverter efficiency, because the two sensors may use different measurement points and update intervals.
+The estimated efficiency is direction-aware: while charging it uses BMS power / external power, and while discharging it uses external power / BMS power. It is only calculated when both values are at least 300 W and have the same direction. It remains a diagnostic estimate because the sensors may use different measurement points and update intervals.
