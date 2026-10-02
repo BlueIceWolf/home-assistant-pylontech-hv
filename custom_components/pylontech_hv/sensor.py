@@ -117,7 +117,7 @@ CALCULATED = {
         ),
     ),
     "power_ratio_pct": (
-        "Geschätztes Leistungsverhältnis",
+        "Geschätzter Wirkungsgrad",
         SensorEntityDescription(
             key="power_ratio_pct",
             state_class=SensorStateClass.MEASUREMENT,
