@@ -307,3 +307,18 @@ That can help expand compatibility without guessing the protocol.
 The integration keeps diagnostic cell-voltage/temperature observations separate from actual BMS alarm states. A cell-voltage delta alone is therefore **not** reported as a Pylontech BMS warning.
 
 For Force-H2 systems, an observed full charge (SOC >= 99%) is stored locally as the last balancing/full-charge event. After 90 days without another observed full charge, `binary_sensor` **Ausgleichsladung empfohlen** becomes active. This follows Pylontech's maintenance guidance to periodically charge the system fully for balancing. Until the integration has observed its first full charge, no overdue maintenance alarm is asserted.
+
+
+## Optional external power comparison
+
+Starting with v1.0.3, the integration can compare the BMS DC power with an optional external Home Assistant power sensor, for example a battery-power value reported by an inverter.
+
+Open the integration options and select **External battery power (optional)**. If the external integration uses the opposite sign convention for charging/discharging, enable **Invert external power sign**.
+
+The integration then exposes:
+
+- External battery power
+- Power difference
+- Estimated power ratio
+
+The ratio is only calculated when both values are at least 300 W and have the same direction. It is intentionally called a **power ratio**, not inverter efficiency, because the two sensors may use different measurement points and update intervals.
