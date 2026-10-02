@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
+from homeassistant.helpers.storage import Store
 
 from .const import (
     CONF_CELL_SCAN_INTERVAL,
@@ -62,6 +63,8 @@ class PylontechUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.unit_sensors: dict[str, Sensor] = {}
         self.bat_sensors: dict[str, Sensor] = {}
         self._last_cell_update: datetime | None = None
+        self._last_full_charge: datetime | None = None
+        self._storage = Store(hass, 1, f"{DOMAIN}.{entry.entry_id}.maintenance")
 
         scan = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
         super().__init__(
@@ -74,6 +77,13 @@ class PylontechUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def detect_sensors(self) -> None:
         """Detect available sensor schemas once."""
+        stored = await self._storage.async_load()
+        if stored and stored.get("last_full_charge"):
+            try:
+                self._last_full_charge = datetime.fromisoformat(stored["last_full_charge"])
+            except (TypeError, ValueError):
+                self._last_full_charge = None
+
         connected = False
         try:
             await self.pylontech.connect()
@@ -226,28 +236,31 @@ class PylontechUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "0",
             "0x0",
         )
-        data["warn_any"] = any(
-            data.get(key, False)
-            for key in (
-                "warn_cell_imbalance",
-                "warn_temperature",
-                "warn_cell_voltage",
-                "warn_bms_state",
-            )
-        )
+        # Only actual BMS state/error information is exposed as a BMS warning.
+        # Diagnostic thresholds remain separate observations.
+        data["warn_any"] = data["warn_bms_state"]
 
         messages: list[str] = []
-        if data["warn_cell_imbalance"]:
-            messages.append(
-                f"Zellspannungsdifferenz {data['diag_cell_delta_v'] * 1000:.0f} mV"
-            )
-        if data["warn_temperature"]:
-            messages.append(f"Zelltemperatur {temp_high:.1f} °C")
-        if data["warn_cell_voltage"]:
-            messages.append("Zellspannung außerhalb der eingestellten Grenzen")
         if data["warn_bms_state"]:
             messages.append(f"BMS-Status/Fehlercode: {data.get('error_code')}")
-        data["warn_message"] = "; ".join(messages) if messages else "Keine Warnung"
+        data["warn_message"] = "; ".join(messages) if messages else "Keine BMS-Warnung"
+
+        # Force-H2 balancing maintenance is a periodic full charge. Remember
+        # observed full charges locally and recommend another after 90 days.
+        soc = _float(data.get("charge_ah_perc"))
+        now = dt_util.utcnow()
+        if soc is not None and soc >= 99.0:
+            if self._last_full_charge is None or (now - self._last_full_charge) >= timedelta(hours=12):
+                self._last_full_charge = now
+                self.hass.async_create_task(
+                    self._storage.async_save({"last_full_charge": now.isoformat()})
+                )
+
+        data["last_full_charge"] = self._last_full_charge
+        data["balance_recommended"] = bool(
+            self._last_full_charge is not None
+            and now - self._last_full_charge >= timedelta(days=90)
+        )
 
     async def _safe_disconnect(self) -> None:
         try:
